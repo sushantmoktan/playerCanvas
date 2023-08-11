@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #field {
+            position: relative;
+            border: 2px solid black;
+        }
+
+        .player {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: red;
+            border-radius: 50%;
+            cursor: move;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Football field layout -->
+
+    <div class="w-full mx-auto">
+        <div class="h-screen ">
+            <div class="flex flex-row  m-2">
+                <!-- Team A Area -->
+                <div class="w-[400px] h-52 border-2 border-black opacity-50 bg-blue-200 relative">
+                    <p>Team A</p>
+                </div>
+                <!-- Team B Area -->
+                <div class="w-[400px] h-52 border-2 border-black opacity-50 bg-green-200">
+                    <p>Team B</p>
+                </div>
+
+            </div>
+            <div id="save" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">save</div>
+            <div id="editTeam" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">Edit Team</div>
+            <div class="relative flex-1">
+                <img class="w-80" src="./assets/240_F_305775190_pfhJSdSpTjYG1cERgWb4wLLrQQPco1fU.jpg" alt="">
+                <div class="absolute top-0 h-full ">
+                    <div id="field"></div>
+                </div>
+
+            </div>
+
+            <!-- Football Field -->
+
+
+        </div>
+
+    </div>
+
+    <script>
+        let lockBackground = false;
+        // Get the buttons
+        const saveButton = document.getElementById('save');
+        const editTeamButton = document.getElementById('editTeam');
+
+        // Initial state: Show "Save" button and hide "Edit Team" button
+        saveButton.style.display = 'block';
+        editTeamButton.style.display = 'none';
+
+        // Event listener for "Save" button
+        saveButton.addEventListener('click', () => {
+            lockBackground = true;
+            // Hide "Save" button
+            saveButton.style.display = 'none';
+            // Show "Edit Team" button
+            editTeamButton.style.display = 'block';
+        });
+
+        // Event listener for "Edit Team" button
+        editTeamButton.addEventListener('click', () => {
+            // Hide "Edit Team" button
+            editTeamButton.style.display = 'none';
+            // Show "Save" button
+            saveButton.style.display = 'block';
+        });
+
+        const players = ["sagar", "mandeep", "sujal", "nimesh", "pratish", "rahul", "aashishJr", "sayan", "nikhil", "prayash", "turya", "willi", "pranish", "sushant", "dario", "anup", "vandit", "kushal", "aashish", "ang", "markus", "resham", "julian"]
+        // Get the field element
+        const field = document.getElementById('field');
+
+        // Player positions
+        const playerPositions = [];
+
+        // Create players on the field
+        function createPlayers(numPlayers) {
+            // Clear existing players
+            playerPositions.length = 0;
+            field.innerHTML = '';
+            initialX = 10;
+            initialY = 50;
+            // Create new players
+            players.forEach(name => {
+
+                const player = document.createElement('div');
+                player.className = 'absolute space-y-1 grid justify-items-center';
+                player.style.left = initialX + 'px';
+                player.style.top = initialY + 'px';
+                const playerAvatar = document.createElement('div')
+                playerAvatar.className = "h-6 w-6 cursor-move rounded-full bg-blue-500"
+                const playerAvatarLetter = document.createElement('p');
+                playerAvatarLetter.className = "text-center"
+                playerAvatarLetter.innerText = name.charAt(0).toUpperCase();
+                const playerName = document.createElement('div')
+                playerName.className = "bg-white text-black px-2 rounded-md text-center text-xs select-none capitalize"
+                playerName.innerText = name
+                playerAvatar.appendChild(playerAvatarLetter)
+                player.appendChild(playerAvatar)
+                player.appendChild(playerName)
+                setBackgroundColor(playerAvatar, initialX, initialY)
+                // Add event listeners for moving the player
+                player.addEventListener('mousedown', startDrag);
+                player.addEventListener('touchstart', startDrag);
+
+                field.appendChild(player);
+                playerPositions.push({ x: initialX, y: initialY }); // Initial player position
+
+                initialX += 50;
+                if (initialX > 700) {
+                    initialX = 10
+                    initialY += 50;
+                }
+            })
+
+        }
+        function setBackgroundColor(player, x, y) {
+            if (!lockBackground) {
+                player.classList.remove("bg-blue-500");
+                player.classList.remove("bg-rose-500");
+                player.classList.remove("bg-yellow-500");
+                if (x < 404 && y < -30) {
+                    player.classList.add("bg-yellow-500");
+                } else if (x > 404 && y < -30) {
+                    player.classList.add("bg-blue-500");
+                } else {
+                    player.classList.add("bg-rose-500");
+                }
+            }
+        }
+        // Move player on the field
+        function movePlayer(playerIndex, x, y) {
+            console.log(playerPositions, "before", playerIndex)
+
+            const player = field.children[playerIndex];
+            player.style.left = x + 'px';
+            player.style.top = y + 'px';
+            setBackgroundColor(player.children[0], x, y)
+            playerPositions[playerIndex] = { x, y };
+            console.warn(playerPositions)
+        }
+
+        // Start dragging the player
+        function startDrag(event) {
+            const playerIndex = Array.from(field.children).indexOf(this);
+            const playerPos = playerPositions[playerIndex];
+
+            const startX = (event.touches ? event.touches[0].clientX : event.clientX) - playerPos.x;
+            const startY = (event.touches ? event.touches[0].clientY : event.clientY) - playerPos.y;
+            console.log()
+
+            const moveHandler = (event) => {
+                const x = (event.touches ? event.touches[0].clientX : event.clientX) - startX;
+                const y = (event.touches ? event.touches[0].clientY : event.clientY) - startY;
+                movePlayer(playerIndex, x, y);
+            };
+
+            const endHandler = () => {
+                document.removeEventListener('mousemove', moveHandler);
+                document.removeEventListener('touchmove', moveHandler);
+                document.removeEventListener('mouseup', endHandler);
+                document.removeEventListener('touchend', endHandler);
+            };
+
+            document.addEventListener('mousemove', moveHandler);
+            document.addEventListener('touchmove', moveHandler);
+            document.addEventListener('mouseup', endHandler);
+            document.addEventListener('touchend', endHandler);
+        }
+
+        // Usage example
+        createPlayers(11); // Create 8 players on the field
+
+    </script>
+</body>
+
+</html>
