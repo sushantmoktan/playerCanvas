@@ -8,6 +8,13 @@
     <title>Document</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        body {
+            overflow: hidden;
+            /* Prevents scrolling */
+            overscroll-behavior-y: none;
+            /* Prevents bounce effect on touch devices */
+        }
+
         #field {
             position: relative;
             border: 2px solid black;
@@ -28,23 +35,69 @@
 
     <!-- Football field layout -->
 
-    <div class="w-full mx-auto">
-        <div class="h-screen ">
-            <div class="flex flex-row  m-2">
-                <!-- Team A Area -->
-                <div class="w-[400px] h-52 border-2 border-black opacity-50 bg-blue-200 relative">
-                    <p>Team A</p>
-                </div>
-                <!-- Team B Area -->
-                <div class="w-[400px] h-52 border-2 border-black opacity-50 bg-green-200">
-                    <p>Team B</p>
-                </div>
+    <div class="w-full mx-auto select-none">
+        <div class="h-screen overscroll-none">
+            <div>
+                <div class="flex flex-row  m-2">
+                    <!-- Team A Area -->
+                    <div class="w-[400px] h-52 border-2 border-black opacity-50 bg-blue-200 relative">
+                        <p>Team A</p>
+                    </div>
+                    <!-- Team B Area -->
+                    <div class="w-[400px] h-52 border-2 border-black opacity-50 bg-green-200">
+                        <p>Team B</p>
+                    </div>
 
+                </div>
+                <div id="save" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">save</div>
+                <div id="editTeam" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">Edit Team</div>
             </div>
-            <div id="save" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">save</div>
-            <div id="editTeam" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">Edit Team</div>
-            <div class="relative flex-1">
-                <img class="w-80" src="./240_F_305775190_pfhJSdSpTjYG1cERgWb4wLLrQQPco1fU.jpg" alt="">
+            <div class="relative flex-1 ">
+                <div class="w-[500px] h-[700px] bg-green-600 mx-auto flex justify-center items-center">
+                    <div class="w-[400px] h-[600px] relative border-2 border-white shadow-lg overflow-hidden">
+
+                        <!-- Grass pattern -->
+                        <div class="absolute w-full h-full bg-green-600 bg-radial bg-repeat pattern-1"></div>
+
+                        <!-- Center circle -->
+                        <div
+                            class="w-[100px] h-[100px] border-2 border-white rounded-full absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%]">
+                        </div>
+                        <!-- Center mid line -->
+                        <div
+                            class=" w-full border border-white rounded-full absolute top-[50%] left-[50%] transform translate-x-[-50%] translate-y-[-50%]">
+                        </div>
+
+                        <!-- Goals -->
+                        <div
+                            class="h-[90px] w-[250px] absolute left-[20%] top-0 border-2 border-b-1 border-white bg-transparent">
+                            <div
+                                class="h-[60px] w-[190px] absolute left-[15%] top-0 border-2 border-b-none border-white bg-transparent">
+                                <div
+                                    class="h-[30px] w-[110px] absolute left-[15%] top-0 border-4 border-b-none border-white bg-transparent">
+
+                                </div>
+                            </div>
+                        </div>
+                        <div
+                            class="h-[90px] w-[250px] absolute left-[20%] bottom-0 border-2 border-b-1 border-white bg-transparent">
+                            <div
+                                class="h-[60px] w-[190px] absolute left-[15%] bottom-0 border-2 border-b-none border-white bg-transparent">
+                                <div
+                                    class="h-[30px] w-[110px] absolute left-[15%] bottom-0 border-4 border-b-none border-white bg-transparent">
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Corner areas -->
+                        <div class="w-[20px] h-[20px] bg-white absolute top-0 left-0 "></div>
+                        <div class="w-[20px] h-[20px] bg-white absolute top-0 right-0"></div>
+                        <div class="w-[20px] h-[20px] bg-white absolute bottom-0 left-0"></div>
+                        <div class="w-[20px] h-[20px] bg-white absolute bottom-0 right-0"></div>
+                    </div>
+                </div>
                 <div class="absolute top-0 h-full ">
                     <div id="field"></div>
                 </div>
@@ -79,6 +132,7 @@
 
         // Event listener for "Edit Team" button
         editTeamButton.addEventListener('click', () => {
+            lockBackground = false;
             // Hide "Edit Team" button
             editTeamButton.style.display = 'none';
             // Show "Save" button
@@ -98,7 +152,7 @@
             playerPositions.length = 0;
             field.innerHTML = '';
             initialX = 10;
-            initialY = 50;
+            initialY = 0;
             // Create new players
             players.forEach(name => {
 
