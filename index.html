@@ -41,7 +41,13 @@
                 <div class="flex flex-row  m-2">
                     <!-- Team A Area -->
                     <div class="w-[400px] h-52 border-2 border-black opacity-50 bg-blue-200 relative">
+
+                        <p><span class="text-xs font-bold bg-rose-800 rounded-md p-1 text-white">Mode:</span>&nbsp;
+                            <span id="status">Saved !click edit button to edit</span>
+                        </p>
+
                         <p>Team A</p>
+
                     </div>
                     <!-- Team B Area -->
                     <div class="w-[400px] h-52 border-2 border-black opacity-50 bg-green-200">
@@ -112,18 +118,20 @@
     </div>
 
     <script>
-        let lockBackground = false;
+        let lockBackground = true;
         // Get the buttons
         const saveButton = document.getElementById('save');
         const editTeamButton = document.getElementById('editTeam');
+        const statusText = document.getElementById("status");
 
         // Initial state: Show "Save" button and hide "Edit Team" button
-        saveButton.style.display = 'block';
-        editTeamButton.style.display = 'none';
+        saveButton.style.display = 'none';
+        editTeamButton.style.display = 'block';
 
         // Event listener for "Save" button
         saveButton.addEventListener('click', () => {
             lockBackground = true;
+            statusText.innerText = "Saved !click edit button to edit"
             // Hide "Save" button
             saveButton.style.display = 'none';
             // Show "Edit Team" button
@@ -133,51 +141,78 @@
         // Event listener for "Edit Team" button
         editTeamButton.addEventListener('click', () => {
             lockBackground = false;
+            statusText.innerText = "Edit !click save button to save!"
             // Hide "Edit Team" button
             editTeamButton.style.display = 'none';
             // Show "Save" button
             saveButton.style.display = 'block';
         });
 
-        const players = ["sagar", "mandeep", "sujal", "nimesh", "pratish", "rahul", "aashishJr", "sayan", "nikhil", "prayash", "turya", "willi", "pranish", "sushant", "dario", "anup", "vandit", "kushal", "aashish", "ang", "markus", "resham", "julian"]
         // Get the field element
         const field = document.getElementById('field');
+        const playerList = [
+            { "name": "sujal", "jerseyNo": 1 },
+            { "name": "resham", "jerseyNo": 2 },
+            { "name": "dipendra", "jerseyNo": 3 },
+            { "name": "saurabh", "jerseyNo": 4 },
+            { "name": "mandeep", "jerseyNo": 5 },
+            { "name": "rahul", "jerseyNo": 6 },
+            { "name": "sagar", "jerseyNo": 7 },
+            { "name": "pratish", "jerseyNo": 8 },
+            { "name": "nimesh", "jerseyNo": 9 },
+            { "name": "sushant", "jerseyNo": 10 },
+            { "name": "prayash", "jerseyNo": 12 },
+            { "name": "aashish", "jerseyNo": 14 },
+            { "name": "anup", "jerseyNo": 15 },
+            { "name": "pranuj", "jerseyNo": 18 },
+            { "name": "pradip", "jerseyNo": 19 },
+            { "name": "kushal", "jerseyNo": 23 },
+            { "name": "pranish", "jerseyNo": 25 },
+            { "name": "lal babu", "jerseyNo": 44 },
+            { "name": "shiraj", "jerseyNo": 21 },
+
+            { "name": "aashishSr.", "jerseyNo": 31 },
+            { "name": "sayan", "jerseyNo": 11 },
+            { "name": "turya", "jerseyNo": 32 },
+            { "name": "ang", "jerseyNo": 33 },
+            { "name": "markus", "jerseyNo": 34 },
+            { "name": "julian", "jerseyNo": 35 },
+            { "name": "dario", "jerseyNo": 36 },
+
+            { "name": "nikhil", "jerseyNo": 37 },
+            { "name": "willi", "jerseyNo": 38 },
+        ]
+
+
 
         // Player positions
         const playerPositions = [];
 
+        const init = () => {
+            const storedData = JSON.parse(localStorage.getItem('playersInfo')) || []
+            if (storedData.length > 0) {
+                createPlayers(storedData)
+            } else {
+                createPlayers(playerList)
+            }
+
+        }
+
         // Create players on the field
-        function createPlayers(numPlayers) {
+        function createPlayers(players) {
+            console.log("pla", players)
             // Clear existing players
             playerPositions.length = 0;
             field.innerHTML = '';
-            initialX = 10;
-            initialY = 0;
+            let initialX = 10;
+            let initialY = 0;
             // Create new players
-            players.forEach(name => {
-
-                const player = document.createElement('div');
-                player.className = 'absolute space-y-1 grid justify-items-center';
-                player.style.left = initialX + 'px';
-                player.style.top = initialY + 'px';
-                const playerAvatar = document.createElement('div')
-                playerAvatar.className = "h-6 w-6 cursor-move rounded-full bg-blue-500"
-                const playerAvatarLetter = document.createElement('p');
-                playerAvatarLetter.className = "text-center"
-                playerAvatarLetter.innerText = name.charAt(0).toUpperCase();
-                const playerName = document.createElement('div')
-                playerName.className = "bg-white text-black px-2 rounded-md text-center text-xs select-none capitalize"
-                playerName.innerText = name
-                playerAvatar.appendChild(playerAvatarLetter)
-                player.appendChild(playerAvatar)
-                player.appendChild(playerName)
-                setBackgroundColor(playerAvatar, initialX, initialY)
-                // Add event listeners for moving the player
-                player.addEventListener('mousedown', startDrag);
-                player.addEventListener('touchstart', startDrag);
-
-                field.appendChild(player);
-                playerPositions.push({ x: initialX, y: initialY }); // Initial player position
+            players.forEach((player, index) => {
+                const x = player.x ? player.x : initialX
+                const y = player.y ? player.y : initialY
+                const playerElement = createPlayerElement(player, x, y, index)
+                field.appendChild(playerElement);
+                localStorage.setItem("playersInfo", JSON.stringify(playerPositions));
 
                 initialX += 50;
                 if (initialX > 700) {
@@ -187,29 +222,69 @@
             })
 
         }
-        function setBackgroundColor(player, x, y) {
+
+        const createPlayerElement = (data, x, y, index) => {
+            playerPositions.push({ ...data, x: x, y: y }); //player position
+            const player = document.createElement('div');
+            player.className = 'absolute space-y-1 grid justify-items-center';
+            player.style.left = x + 'px';
+            player.style.top = y + 'px';
+            const playerAvatar = document.createElement('div')
+            playerAvatar.className = "h-6 w-6 cursor-move rounded-full bg-red-500"
+            const playerAvatarLetter = document.createElement('p');
+            playerAvatarLetter.className = "text-center"
+            playerAvatarLetter.innerText = data.jerseyNo;
+            const playerName = document.createElement('div')
+            playerName.className = "bg-white text-black px-2 rounded-md text-center text-xs select-none capitalize"
+            playerName.innerText = data.name
+            playerAvatar.appendChild(playerAvatarLetter)
+            player.appendChild(playerAvatar)
+            player.appendChild(playerName)
+
+            if (data.background) {
+                playerAvatar.classList.add(data.background)
+            } else {
+                setBackgroundColor(playerAvatar, x, y, index)
+            }
+
+            // Add event listeners for moving the player
+            player.addEventListener('mousedown', startDrag);
+            player.addEventListener('touchstart', startDrag);
+            return player;
+        }
+        function setBackgroundColor(player, x, y, playerIndex) {
+            const yellow = "bg-yellow-500";
+            const blue = "bg-blue-500";
+            const rose = "bg-rose-500";
             if (!lockBackground) {
-                player.classList.remove("bg-blue-500");
-                player.classList.remove("bg-rose-500");
-                player.classList.remove("bg-yellow-500");
-                if (x < 404 && y < -30) {
-                    player.classList.add("bg-yellow-500");
-                } else if (x > 404 && y < -30) {
-                    player.classList.add("bg-blue-500");
+                player.classList.remove(blue);
+                player.classList.remove(rose);
+                player.classList.remove(yellow);
+
+                if (x < 370 && y < -74) {
+                    playerPositions[playerIndex].background = yellow
+                    player.classList.add(yellow);
+                } else if (x > 402 && x < 773 && y < -74) {
+
+                    playerPositions[playerIndex].background = blue
+                    player.classList.add(blue);
                 } else {
-                    player.classList.add("bg-rose-500");
+                    playerPositions[playerIndex].background = rose
+                    player.classList.add(rose);
+
                 }
             }
         }
         // Move player on the field
         function movePlayer(playerIndex, x, y) {
-            console.log(playerPositions, "before", playerIndex)
-
             const player = field.children[playerIndex];
             player.style.left = x + 'px';
             player.style.top = y + 'px';
-            setBackgroundColor(player.children[0], x, y)
-            playerPositions[playerIndex] = { x, y };
+            setBackgroundColor(player.children[0], x, y, playerIndex)
+            playerPositions[playerIndex].x = x;
+            playerPositions[playerIndex].y = y;
+
+            localStorage.setItem("playersInfo", JSON.stringify(playerPositions));
             console.warn(playerPositions)
         }
 
@@ -220,7 +295,6 @@
 
             const startX = (event.touches ? event.touches[0].clientX : event.clientX) - playerPos.x;
             const startY = (event.touches ? event.touches[0].clientY : event.clientY) - playerPos.y;
-            console.log()
 
             const moveHandler = (event) => {
                 const x = (event.touches ? event.touches[0].clientX : event.clientX) - startX;
@@ -241,9 +315,7 @@
             document.addEventListener('touchend', endHandler);
         }
 
-        // Usage example
-        createPlayers(11); // Create 8 players on the field
-
+        init();
     </script>
 </body>
 
