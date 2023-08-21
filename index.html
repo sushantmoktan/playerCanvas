@@ -55,8 +55,13 @@
                     </div>
 
                 </div>
-                <div id="save" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">save</div>
-                <div id="editTeam" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">Edit Team</div>
+                <div class="flex flex-row space-x-4">
+                    <div id="save" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">save</div>
+                    <div id="editTeam" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">Edit Team
+                    </div>
+                    <div id="addPlayer" class="bg-blue-200 px-2 w-fit rounded-md text-lg cursor-pointer m-2">Add Player
+                    </div>
+                </div>
             </div>
             <div class="relative flex-1 ">
                 <div class="w-[500px] h-[700px] bg-green-600 mx-auto flex justify-center items-center">
@@ -112,7 +117,9 @@
 
             <!-- Football Field -->
 
+            <div id="modal1" class="absolute top-0 h-full w-full bg-black/80">
 
+            </div>
         </div>
 
     </div>
@@ -123,10 +130,12 @@
         const saveButton = document.getElementById('save');
         const editTeamButton = document.getElementById('editTeam');
         const statusText = document.getElementById("status");
-
+        const addPlayerButton = document.getElementById("addPlayer")
         // Initial state: Show "Save" button and hide "Edit Team" button
         saveButton.style.display = 'none';
         editTeamButton.style.display = 'block';
+        //div for showing edit or delete modal
+        const modalDiv = document.getElementById("modal1")
 
         // Event listener for "Save" button
         saveButton.addEventListener('click', () => {
@@ -147,6 +156,10 @@
             // Show "Save" button
             saveButton.style.display = 'block';
         });
+
+        addPlayerButton.addEventListener("click", () => {
+            addOrEditPlayer();
+        })
 
         // Get the field element
         const field = document.getElementById('field');
@@ -189,6 +202,7 @@
         const playerPositions = [];
 
         const init = () => {
+            closeModal();
             const storedData = JSON.parse(localStorage.getItem('playersInfo')) || []
             if (storedData.length > 0) {
                 createPlayers(storedData)
@@ -238,9 +252,9 @@
             playerName.className = "bg-white text-black px-2 rounded-md text-center text-xs select-none capitalize"
             playerName.innerText = data.name
             playerAvatar.appendChild(playerAvatarLetter)
+            playerAvatarLetter.setAttribute('player-id', index);
             player.appendChild(playerAvatar)
             player.appendChild(playerName)
-
             if (data.background) {
                 playerAvatar.classList.add(data.background)
             } else {
@@ -250,6 +264,7 @@
             // Add event listeners for moving the player
             player.addEventListener('mousedown', startDrag);
             player.addEventListener('touchstart', startDrag);
+            playerAvatarLetter.addEventListener('dblclick', handleDoubleClick);
             return player;
         }
         function setBackgroundColor(player, x, y, playerIndex) {
@@ -313,6 +328,101 @@
             document.addEventListener('touchmove', moveHandler);
             document.addEventListener('mouseup', endHandler);
             document.addEventListener('touchend', endHandler);
+        }
+
+        // Function to add a player or edit player name
+        function addOrEditPlayer(playerIndex = null) {
+            console.log("addored", playerIndex)
+            const playerName = prompt("Enter player name:");
+            if (playerName) {
+
+                const jerseyNo = Math.floor(Math.random() * 99) + 1;
+                const initialX = Math.floor(Math.random() * 100) + 10;
+                const initialY = Math.floor(Math.random() * 100) + 10;
+                playerPositions.push({ name: playerName, jerseyNo: jerseyNo, x: initialX, y: initialY });
+                updatePlayers()
+            }
+        }
+        function editPlayerName(playerIndex) {
+            const player = playerPositions[playerIndex]
+
+            if (player) {
+                const input = document.getElementById("playerNameInput")
+                const playerName = playerNameInput.value.trim();
+                if (playerName) {
+                    playerPositions[playerIndex].name = playerName;
+                    updatePlayers()
+                }
+
+            }
+        }
+        // Function to delete a player
+        function deletePlayer(playerIndex) {
+            playerPositions.splice(playerIndex, 1); // Remove the player from the array
+            updatePlayers();
+        }
+        // Function to handle double-click on a player
+        function handleDoubleClick(event) {
+            const playerIndex = event.target.getAttribute('player-id');
+            showEditOrDeleteModal(playerIndex)
+        }
+
+        function showEditOrDeleteModal(playerIndex) {
+            modalDiv.style.display = "block"
+            const playerName = playerPositions[playerIndex].name;
+            console.log(playerIndex, playerName)
+            const modal = document.createElement('div');
+            modal.className = 'h-full w-full grid justify-items-center items-center';
+            modal.innerHTML = `
+                    <div class="bg-white p-4 rounded-md shadow-xl max-w-[400px] h-fit space-y-4">
+                        <div onclick="closeModal()" class="text-xl grid font-bold text-black/60 w-full justify-end">
+                            <p class="cursor-pointer rounded-full h-8 w-8 hover:bg-red-200 bg-green-200 text-center ">X
+                            </p>
+                        </div>
+                        <div class="uppercase">player: ${playerName}</div>
+                        <div>
+                            <button onclick="showAddPlayerModal(${playerIndex})" type="button"
+                                class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Edit
+                                name</button>
+                            <button onclick="deletePlayer(${playerIndex})" type="button"
+                                class="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Delete</button>
+                        </div>
+                    </div>
+        `;
+            modalDiv.appendChild(modal);
+        }
+        function showAddPlayerModal(playerIndex) {
+            closeModal();
+            modalDiv.style.display = "block"
+            const playerName = playerPositions[playerIndex].name;
+            console.log(playerIndex, playerName)
+            const modal = document.createElement('div');
+            modal.className = 'h-full w-full grid justify-items-center items-center';
+            modal.innerHTML = `
+                  <div class="bg-white p-4 rounded-md shadow-xl max-w-[400px] h-fit space-y-4">
+                      <div onclick="closeModal()" class="text-xl grid font-bold text-black/60 w-full justify-end">
+                          <p class="cursor-pointer rounded-full h-8 w-8 hover:bg-red-200 bg-green-200 text-center ">X
+                          </p>
+                      </div>
+                      <div class="uppercase">player: ${playerName}</div>
+                       <input type="text" id="playerNameInput" placeholder="Enter player name">
+                      <div>
+                          <button onclick="editPlayerName(${playerIndex})" type="button"
+                              class="text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-full text-sm px-5 py-2.5 text-center mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">OK</button>
+                        
+                  </div>
+        `;
+            modalDiv.appendChild(modal);
+        }
+        function closeModal() {
+            console.log("aa")
+            modalDiv.innerHTML = "";
+            modalDiv.style.display = "none";
+        }
+        // Function to update players after adding/editing
+        function updatePlayers() {
+            localStorage.setItem("playersInfo", JSON.stringify(playerPositions));
+            init();
         }
 
         init();
